@@ -19,6 +19,7 @@ class Swiper extends Component {
     super(props)
 
     this.state = {
+      //test
       ...this.calculateCardIndexes(props.cardIndex, props.cards),
       pan: new Animated.ValueXY(),
       cards: props.cards,
