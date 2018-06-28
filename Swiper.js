@@ -19,7 +19,6 @@ class Swiper extends Component {
     super(props)
 
     this.state = {
-      //test
       ...this.calculateCardIndexes(props.cardIndex, props.cards),
       pan: new Animated.ValueXY(),
       cards: props.cards,
@@ -253,10 +252,12 @@ class Swiper extends Component {
       return
     }
 
-    const { horizontalThreshold, verticalThreshold } = this.props
+    const { horizontalThreshold, verticalThreshold, cardHeight, viewportHeight } = this.props
 
     const animatedValueX = Math.abs(this._animatedValueX)
     const animatedValueY = Math.abs(this._animatedValueY)
+
+    const scrollOverflowLimit = cardHeight - viewportHeight
 
     const isSwiping =
       animatedValueX > horizontalThreshold || animatedValueY > verticalThreshold
@@ -269,7 +270,11 @@ class Swiper extends Component {
 
       this.swipeCard(onSwipeDirectionCallback)
     } else {
-      this.resetTopCard()
+      if (this._animatedValueY > 0) {
+        this.resetTopCard()
+      } else if (-this._animatedValueY > scrollOverflowLimit) {
+        this.snapBottomCardScroll(scrollOverflowLimit)
+      }
     }
 
     if (!this.state.slideGesture) {
@@ -350,6 +355,16 @@ class Swiper extends Component {
     })
 
     this.props.onSwipedAborted()
+  }
+
+  snapBottomCardScroll = scrollOverflowLimit => {
+    Animated.spring(this.state.pan.y, {
+      toValue: -scrollOverflowLimit - 20,
+    }).start()
+    this.state.pan.setOffset({
+      x: 0,
+      y: 0
+    })
   }
 
   swipeBack = cb => {
